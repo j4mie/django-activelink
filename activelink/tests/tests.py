@@ -1,3 +1,4 @@
+import warnings
 from django.template import Template, Context, loader
 from django.test.client import RequestFactory
 
@@ -72,3 +73,11 @@ def test_ifstartswith():
     data = {'request': rf.get('/not-test-url/')}
     rendered = render(template, data)
     assert rendered == 'off'
+
+def test_fails_gracefully_without_request():
+    template = """{% ifactive "test" %}on{% else %}off{% endifactive %}"""
+
+    with warnings.catch_warnings(record=True) as w:
+        rendered = render(template)
+        assert len(w) == 1
+        assert rendered == 'off'

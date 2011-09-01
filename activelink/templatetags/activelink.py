@@ -24,7 +24,20 @@ class ActiveLinkNodeBase(Node):
             except VariableDoesNotExist:
                 var = None
 
-        request = context['request']
+        request = context.get('request')
+
+        # Gracefully fail if request is not in the context
+        if not request:
+            import warnings
+            warnings.warn("The activelink templatetags require that a "
+                          "'request' variable is available in the template's "
+                          "context. Check you are using a RequestContext to "
+                          "render your template, and that "
+                          "'django.core.context_processors.request' is in "
+                          "your TEMPLATE_CONTEXT_PROCESSORS setting"
+            )
+            return self.nodelist_false.render(context)
+
         equal = self.is_active(request, var)
 
         if equal:
