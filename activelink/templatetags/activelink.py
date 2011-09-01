@@ -61,10 +61,10 @@ class ActiveLinkStartsWithNode(ActiveLinkNodeBase):
 def parse(parser, token, end_tag):
     bits = token.split_contents()[1:2]
     var = TemplateIfParser(parser, bits).parse()
-    nodelist_true = parser.parse(('else', 'endifactive'))
+    nodelist_true = parser.parse(('else', end_tag))
     token = parser.next_token()
     if token.contents == 'else':
-        nodelist_false = parser.parse(('endifactive',))
+        nodelist_false = parser.parse((end_tag,))
         parser.delete_first_token()
     else:
         nodelist_false = NodeList()

@@ -81,7 +81,7 @@ def test_ifactive_with_url_arguments():
     assert rendered == 'off'
 
 def test_ifstartswith():
-    template = """{% ifstartswith "test" %}on{% else %}off{% endifactive %}"""
+    template = """{% ifstartswith "test" %}on{% else %}off{% endifstartswith %}"""
 
     data = {'request': rf.get('/test-url/')}
     rendered = render(template, data)
