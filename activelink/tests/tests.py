@@ -59,6 +59,27 @@ def test_ifactive_with_url_in_variable():
     rendered = render(template, data)
     assert rendered == 'off'
 
+def test_ifactive_with_url_arguments():
+    template = """{% ifactive "test_with_arg" "somearg" %}on{% else %}off{% endifactive %}"""
+
+    data = {'request': rf.get('/test-url-with-arg/somearg/')}
+    rendered = render(template, data)
+    assert rendered == 'on'
+
+    data = {'request': rf.get('/test-url-with-arg/other/')}
+    rendered = render(template, data)
+    assert rendered == 'off'
+
+    template = """{% ifactive "test_with_kwarg" arg="somearg" %}on{% else %}off{% endifactive %}"""
+
+    data = {'request': rf.get('/test-url-with-kwarg/somearg/')}
+    rendered = render(template, data)
+    assert rendered == 'on'
+
+    data = {'request': rf.get('/test-url-with-kwarg/other/')}
+    rendered = render(template, data)
+    assert rendered == 'off'
+
 def test_ifstartswith():
     template = """{% ifstartswith "test" %}on{% else %}off{% endifactive %}"""
 
