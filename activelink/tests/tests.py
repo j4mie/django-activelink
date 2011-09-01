@@ -25,6 +25,17 @@ def test_ifactive():
     rendered = render(template, data)
     assert rendered == 'off'
 
+def test_ifactive_without_else():
+    template = """{% ifactive "test" %}on{% endifactive %}"""
+
+    data = {'request': rf.get('/test-url/')}
+    rendered = render(template, data)
+    assert rendered == 'on'
+
+    data = {'request': rf.get('/not-test-url/')}
+    rendered = render(template, data)
+    assert rendered == ''
+
 def test_ifactive_with_literal_url():
     template = """{% ifactive "/my-url/" %}on{% else %}off{% endifactive %}"""
 
