@@ -102,3 +102,10 @@ def test_fails_gracefully_without_request():
         rendered = render(template)
         assert len(w) == 1
         assert rendered == 'off'
+
+def test_with_querystring():
+    template = """{% ifactive "test" %}on{% else %}off{% endifactive %}"""
+
+    data = {'request': rf.get('/test-url/?foo=bar')}
+    rendered = render(template, data)
+    assert rendered == 'on'

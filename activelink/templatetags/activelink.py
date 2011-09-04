@@ -49,13 +49,13 @@ class ActiveLinkNodeBase(Node):
 class ActiveLinkEqualNode(ActiveLinkNodeBase):
 
     def is_active(self, request, path_to_check):
-        return path_to_check == request.get_full_path()
+        return path_to_check == request.path
 
 
 class ActiveLinkStartsWithNode(ActiveLinkNodeBase):
 
     def is_active(self, request, path_to_check):
-        return request.get_full_path().startswith(path_to_check)
+        return request.path.startswith(path_to_check)
 
 
 def parse(parser, token, end_tag):
