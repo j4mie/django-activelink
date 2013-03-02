@@ -13,5 +13,7 @@ settings.configure(
     INSTALLED_APPS=[
         'activelink',
         'activelink.tests',
-    ]
+    ],
+    ACTIVE_LINK_CLASS = 'active',
+    INACTIVE_LINK_CLASS = 'inactive'
 )

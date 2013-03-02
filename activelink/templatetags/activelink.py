@@ -1,85 +1,90 @@
-from django.template import Library, Node, NodeList, VariableDoesNotExist
-from django.core.urlresolvers import NoReverseMatch
-from django.templatetags.future import url
-from django.template.defaulttags import TemplateIfParser
-
+from django.template import Library
+from django.core.urlresolvers import reverse, NoReverseMatch
+from django.conf import settings
 
 register = Library()
 
 
-class ActiveLinkNodeBase(Node):
-
-    def __init__(self, urlnode, var, nodelist_true, nodelist_false):
-        self.urlnode = urlnode
-        self.var = var
-        self.nodelist_true = nodelist_true
-        self.nodelist_false = nodelist_false
-
-    def render(self, context):
-        try:
-            var = self.urlnode.render(context)
-        except NoReverseMatch:
-            try:
-                var = self.var.eval(context)
-            except VariableDoesNotExist:
-                var = None
-
-        request = context.get('request')
-
-        # Gracefully fail if request is not in the context
-        if not request:
-            import warnings
-            warnings.warn("The activelink templatetags require that a "
-                          "'request' variable is available in the template's "
-                          "context. Check you are using a RequestContext to "
-                          "render your template, and that "
-                          "'django.core.context_processors.request' is in "
-                          "your TEMPLATE_CONTEXT_PROCESSORS setting"
-            )
-            return self.nodelist_false.render(context)
-
-        equal = self.is_active(request, var)
-
-        if equal:
-            return self.nodelist_true.render(context)
+def get_current_url_pattern(pattern, *args, **kwargs):
+    try:
+        # Let's try to search by urlname first
+        # according to django's warnings, we should never mix
+        # *args and **kwargs, therefore we reverse using either
+        # *args or **kwargs
+        if args:
+            pattern = reverse(pattern, args=args)
         else:
-            return self.nodelist_false.render(context)
+            pattern = reverse(pattern, kwargs=kwargs)
+    except NoReverseMatch:
+        # fallback to path
+        pass
+
+    return pattern
 
 
-class ActiveLinkEqualNode(ActiveLinkNodeBase):
-
-    def is_active(self, request, path_to_check):
-        return path_to_check == request.path
-
-
-class ActiveLinkStartsWithNode(ActiveLinkNodeBase):
-
-    def is_active(self, request, path_to_check):
-        return request.path.startswith(path_to_check)
-
-
-def parse(parser, token, end_tag):
-    bits = token.split_contents()[1:2]
-    var = TemplateIfParser(parser, bits).parse()
-    nodelist_true = parser.parse(('else', end_tag))
-    token = parser.next_token()
-    if token.contents == 'else':
-        nodelist_false = parser.parse((end_tag,))
-        parser.delete_first_token()
+def output_class(condition, active_class, inactive_class):
+    if condition:
+        act = getattr(settings, 'ACTIVE_LINK_CLASS')
+        if active_class:
+            act = active_class
+        return act
     else:
-        nodelist_false = NodeList()
-
-    return var, nodelist_true, nodelist_false
-
-@register.tag
-def ifactive(parser, token):
-    urlnode = url(parser, token)
-    var, nodelist_true, nodelist_false = parse(parser, token, 'endifactive')
-    return ActiveLinkEqualNode(urlnode, var, nodelist_true, nodelist_false)
+        inact = getattr(settings, 'INACTIVE_LINK_CLASS')
+        if inactive_class:
+            inact = inactive_class
+        return inact
 
 
-@register.tag
-def ifstartswith(parser, token):
-    urlnode = url(parser, token)
-    var, nodelist_true, nodelist_false = parse(parser, token, 'endifstartswith')
-    return ActiveLinkStartsWithNode(urlnode, var, nodelist_true, nodelist_false)
+def get_request_or_warn(context):
+    request = context.get('request')
+    current_url = None
+    if not request:
+        import warnings
+        warnings.warn("The activelink templatetags require that a "
+                      "'request' variable is available in the template's "
+                      "context. Check you are using a RequestContext to "
+                      "render your template, and that "
+                      "'django.core.context_processors.request' is in "
+                      "your TEMPLATE_CONTEXT_PROCESSORS setting"
+        )
+    else:
+        current_url = request.path
+
+    return (request, current_url)
+
+
+@register.simple_tag(takes_context=True)
+def active(context, pattern, active_class='active', inactive_class='',
+           *args, **kwargs):
+
+    pattern = get_current_url_pattern(pattern, *args, **kwargs)
+
+    request, current_url = get_request_or_warn(context)
+    if not request:
+        condition = False
+    else:
+        condition = current_url == pattern
+
+    return output_class(
+        condition,
+        active_class,
+        inactive_class
+    )
+
+
+@register.simple_tag(takes_context=True)
+def startswith(context, pattern, active_class='active', inactive_class='',
+               *args, **kwargs):
+    pattern = get_current_url_pattern(pattern, *args, **kwargs)
+
+    request, current_url = get_request_or_warn(context)
+    if not request:
+        condition = False
+    else:
+        condition = current_url.startswith(pattern)
+
+    return output_class(
+        condition,
+        active_class,
+        inactive_class
+    )

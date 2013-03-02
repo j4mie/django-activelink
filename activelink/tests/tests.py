@@ -1,6 +1,7 @@
 import warnings
 from django.template import Template, Context, loader
 from django.test.client import RequestFactory
+from django.conf import settings
 
 
 rf = RequestFactory()
@@ -16,18 +17,28 @@ def render(template_string, dictionary=None):
 
 
 def test_ifactive():
-    template = """{% ifactive "test" %}on{% else %}off{% endifactive %}"""
+    template = """{% active "test" "on" "off" %}"""
 
     data = {'request': rf.get('/test-url/')}
     rendered = render(template, data)
+    print(rendered)
     assert rendered == 'on'
 
     data = {'request': rf.get('/not-test-url/')}
     rendered = render(template, data)
     assert rendered == 'off'
 
+
+def test_ifactive_class_from_settings():
+    template = """{% active "test" %}"""
+    data = {'request': rf.get('/test-url/')}
+    rendered = render(template, data)
+
+    assert rendered == settings.ACTIVE_LINK_CLASS
+
+
 def test_ifactive_without_else():
-    template = """{% ifactive "test" %}on{% endifactive %}"""
+    template = """{% active "test" "on" %}"""
 
     data = {'request': rf.get('/test-url/')}
     rendered = render(template, data)
@@ -35,10 +46,11 @@ def test_ifactive_without_else():
 
     data = {'request': rf.get('/not-test-url/')}
     rendered = render(template, data)
-    assert rendered == ''
+    assert rendered == settings.INACTIVE_LINK_CLASS or ''
+
 
 def test_ifactive_with_literal_url():
-    template = """{% ifactive "/my-url/" %}on{% else %}off{% endifactive %}"""
+    template = """{% active "/my-url/" "on" "off" %}"""
 
     data = {'request': rf.get('/my-url/')}
     rendered = render(template, data)
@@ -48,8 +60,9 @@ def test_ifactive_with_literal_url():
     rendered = render(template, data)
     assert rendered == 'off'
 
+
 def test_ifactive_with_url_in_variable():
-    template = """{% ifactive myurl %}on{% else %}off{% endifactive %}"""
+    template = """{% active myurl "on" "off" %}"""
 
     data = {'request': rf.get('/test-url/'), 'myurl': '/test-url/'}
     rendered = render(template, data)
@@ -60,7 +73,7 @@ def test_ifactive_with_url_in_variable():
     assert rendered == 'off'
 
 def test_ifactive_with_url_arguments():
-    template = """{% ifactive "test_with_arg" "somearg" %}on{% else %}off{% endifactive %}"""
+    template = """{% active "test_with_arg" "on" "off" "somearg" %}"""
 
     data = {'request': rf.get('/test-url-with-arg/somearg/')}
     rendered = render(template, data)
@@ -70,7 +83,7 @@ def test_ifactive_with_url_arguments():
     rendered = render(template, data)
     assert rendered == 'off'
 
-    template = """{% ifactive "test_with_kwarg" arg="somearg" %}on{% else %}off{% endifactive %}"""
+    template = """{% active "test_with_kwarg" "on" "off" arg="somearg" %}"""
 
     data = {'request': rf.get('/test-url-with-kwarg/somearg/')}
     rendered = render(template, data)
@@ -80,8 +93,9 @@ def test_ifactive_with_url_arguments():
     rendered = render(template, data)
     assert rendered == 'off'
 
+
 def test_ifstartswith():
-    template = """{% ifstartswith "test" %}on{% else %}off{% endifstartswith %}"""
+    template = """{% startswith "test" "on" "off" %}"""
 
     data = {'request': rf.get('/test-url/')}
     rendered = render(template, data)
@@ -95,16 +109,18 @@ def test_ifstartswith():
     rendered = render(template, data)
     assert rendered == 'off'
 
+
 def test_fails_gracefully_without_request():
-    template = """{% ifactive "test" %}on{% else %}off{% endifactive %}"""
+    template = """{% active "test" "on" "off" %}"""
 
     with warnings.catch_warnings(record=True) as w:
         rendered = render(template)
+        print(w)
         assert len(w) == 1
         assert rendered == 'off'
 
 def test_with_querystring():
-    template = """{% ifactive "test" %}on{% else %}off{% endifactive %}"""
+    template = """{% active "test" "on" "off" %}"""
 
     data = {'request': rf.get('/test-url/?foo=bar')}
     rendered = render(template, data)
