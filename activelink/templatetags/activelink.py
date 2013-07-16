@@ -58,6 +58,12 @@ class ActiveLinkStartsWithNode(ActiveLinkNodeBase):
         return request.path.startswith(path_to_check)
 
 
+class ActiveLinkContainsWithNode(ActiveLinkNodeBase):
+
+    def is_active(self, request, path_to_check):
+        return False if request.path.find(path_to_check) == -1 else True
+
+
 def parse(parser, token, end_tag):
     bits = token.split_contents()[1:2]
     var = TemplateIfParser(parser, bits).parse()
@@ -83,3 +89,10 @@ def ifstartswith(parser, token):
     urlnode = url(parser, token)
     var, nodelist_true, nodelist_false = parse(parser, token, 'endifstartswith')
     return ActiveLinkStartsWithNode(urlnode, var, nodelist_true, nodelist_false)
+
+
+@register.tag
+def ifcontains(parser, token):
+    urlnode = url(parser, token)
+    var, nodelist_true, nodelist_false = parse(parser, token, 'endifcontains')
+    return ActiveLinkContainsWithNode(urlnode, var, nodelist_true, nodelist_false)
