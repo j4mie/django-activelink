@@ -95,6 +95,21 @@ def test_ifstartswith():
     rendered = render(template, data)
     assert rendered == 'off'
 
+def test_ifcontains():
+    template = """{% ifcontains "url" %}on{% else %}off{% endifcontains %}"""
+
+    data = {'request': rf.get('/test-url/')}
+    rendered = render(template, data)
+    assert rendered == 'on'
+
+    data = {'request': rf.get('/test-url/sub/')}
+    rendered = render(template, data)
+    assert rendered == 'on'
+
+    data = {'request': rf.get('/test-should-fail/')}
+    rendered = render(template, data)
+    assert rendered == 'off'
+
 def test_fails_gracefully_without_request():
     template = """{% ifactive "test" %}on{% else %}off{% endifactive %}"""
 
