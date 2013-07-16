@@ -29,12 +29,13 @@ class ActiveLinkNodeBase(Node):
         # Gracefully fail if request is not in the context
         if not request:
             import warnings
-            warnings.warn("The activelink templatetags require that a "
-                          "'request' variable is available in the template's "
-                          "context. Check you are using a RequestContext to "
-                          "render your template, and that "
-                          "'django.core.context_processors.request' is in "
-                          "your TEMPLATE_CONTEXT_PROCESSORS setting"
+            warnings.warn(
+                "The activelink templatetags require that a "
+                "'request' variable is available in the template's "
+                "context. Check you are using a RequestContext to "
+                "render your template, and that "
+                "'django.core.context_processors.request' is in "
+                "your TEMPLATE_CONTEXT_PROCESSORS setting"
             )
             return self.nodelist_false.render(context)
 
@@ -76,6 +77,7 @@ def parse(parser, token, end_tag):
         nodelist_false = NodeList()
 
     return var, nodelist_true, nodelist_false
+
 
 @register.tag
 def ifactive(parser, token):
