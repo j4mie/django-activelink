@@ -62,7 +62,7 @@ class ActiveLinkStartsWithNode(ActiveLinkNodeBase):
 class ActiveLinkContainsWithNode(ActiveLinkNodeBase):
 
     def is_active(self, request, path_to_check):
-        return False if request.path.find(path_to_check) == -1 else True
+        return path_to_check in request.path
 
 
 def parse(parser, token, end_tag):
