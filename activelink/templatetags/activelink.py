@@ -29,12 +29,13 @@ class ActiveLinkNodeBase(Node):
         # Gracefully fail if request is not in the context
         if not request:
             import warnings
-            warnings.warn("The activelink templatetags require that a "
-                          "'request' variable is available in the template's "
-                          "context. Check you are using a RequestContext to "
-                          "render your template, and that "
-                          "'django.core.context_processors.request' is in "
-                          "your TEMPLATE_CONTEXT_PROCESSORS setting"
+            warnings.warn(
+                "The activelink templatetags require that a "
+                "'request' variable is available in the template's "
+                "context. Check you are using a RequestContext to "
+                "render your template, and that "
+                "'django.core.context_processors.request' is in "
+                "your TEMPLATE_CONTEXT_PROCESSORS setting"
             )
             return self.nodelist_false.render(context)
 
@@ -58,6 +59,12 @@ class ActiveLinkStartsWithNode(ActiveLinkNodeBase):
         return request.path.startswith(path_to_check)
 
 
+class ActiveLinkContainsWithNode(ActiveLinkNodeBase):
+
+    def is_active(self, request, path_to_check):
+        return path_to_check in request.path
+
+
 def parse(parser, token, end_tag):
     bits = token.split_contents()[1:2]
     var = TemplateIfParser(parser, bits).parse()
@@ -71,6 +78,7 @@ def parse(parser, token, end_tag):
 
     return var, nodelist_true, nodelist_false
 
+
 @register.tag
 def ifactive(parser, token):
     urlnode = url(parser, token)
@@ -83,3 +91,10 @@ def ifstartswith(parser, token):
     urlnode = url(parser, token)
     var, nodelist_true, nodelist_false = parse(parser, token, 'endifstartswith')
     return ActiveLinkStartsWithNode(urlnode, var, nodelist_true, nodelist_false)
+
+
+@register.tag
+def ifcontains(parser, token):
+    urlnode = url(parser, token)
+    var, nodelist_true, nodelist_false = parse(parser, token, 'endifcontains')
+    return ActiveLinkContainsWithNode(urlnode, var, nodelist_true, nodelist_false)

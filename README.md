@@ -24,7 +24,7 @@ Whenever you want to use django-activelink in a template, you need to load its t
 
 ## Usage
 
-Two template tags are provided: `ifactive` and `ifstartswith`. These take exactly the same arguments as the built-in `url` template tag. They check whether the URL provided matches the current request URL. This is easiest to explain with an example:
+Three template tags are provided: `ifactive`, `ifstartswith` and `ifcontains`. These take exactly the same arguments as the built-in `url` template tag. They check whether the URL provided matches the current request URL. This is easiest to explain with an example:
 
     <a href="{% url "myurl" %}" class="{% ifactive "myurl" %}on{% else %}off{% endifactive %}">Menu item</a>
 
@@ -33,6 +33,8 @@ You can also pass a literal URL rather than a URL name:
     <a href="/myurl/" class="{% ifactive "/myurl/" %}on{% else %}off{% endifactive %}">Menu item</a>
 
 The `ifstartswith` tag checks whether the *beginning* of the current URL matches. This is useful for top-level menu items with submenus attached.
+
+The `ifcontains` tag checks that the current URL contains the searched part.
 
 **Note:** Django 1.3 started the process of gradually deprecating the existing `url` template tag and replacing it with a new one, which requires literal string arguments to be quoted. See [the release notes](https://docs.djangoproject.com/en/dev/releases/1.3/#changes-to-url-and-ssi) for more information. To be forwards-compatible, django-activelink *only* supports the new version of the syntax. You can still use it in templates using the old version, but you have to remember to quote your strings properly.
 
