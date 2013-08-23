@@ -59,7 +59,7 @@ class ActiveLinkStartsWithNode(ActiveLinkNodeBase):
         return request.path.startswith(path_to_check)
 
 
-class ActiveLinkContainsWithNode(ActiveLinkNodeBase):
+class ActiveLinkContainsNode(ActiveLinkNodeBase):
 
     def is_active(self, request, path_to_check):
         return path_to_check in request.path
@@ -97,4 +97,4 @@ def ifstartswith(parser, token):
 def ifcontains(parser, token):
     urlnode = url(parser, token)
     var, nodelist_true, nodelist_false = parse(parser, token, 'endifcontains')
-    return ActiveLinkContainsWithNode(urlnode, var, nodelist_true, nodelist_false)
+    return ActiveLinkContainsNode(urlnode, var, nodelist_true, nodelist_false)
