@@ -1,3 +1,4 @@
+import urllib
 from django.template import Library, Node, NodeList, VariableDoesNotExist
 from django.core.urlresolvers import NoReverseMatch
 from django.templatetags.future import url
@@ -39,7 +40,7 @@ class ActiveLinkNodeBase(Node):
             )
             return self.nodelist_false.render(context)
 
-        equal = self.is_active(request, var)
+        equal = self.is_active(urllib.unquote(request.path), urllib.unquote(var))
 
         if equal:
             return self.nodelist_true.render(context)
@@ -49,20 +50,20 @@ class ActiveLinkNodeBase(Node):
 
 class ActiveLinkEqualNode(ActiveLinkNodeBase):
 
-    def is_active(self, request, path_to_check):
-        return path_to_check == request.path
+    def is_active(self, request_path, path_to_check):
+        return path_to_check == request_path
 
 
 class ActiveLinkStartsWithNode(ActiveLinkNodeBase):
 
-    def is_active(self, request, path_to_check):
-        return request.path.startswith(path_to_check)
+    def is_active(self, request_path, path_to_check):
+        return request_path.startswith(path_to_check)
 
 
 class ActiveLinkContainsNode(ActiveLinkNodeBase):
 
-    def is_active(self, request, path_to_check):
-        return path_to_check in request.path
+    def is_active(self, request_path, path_to_check):
+        return path_to_check in request_path
 
 
 def parse(parser, token, end_tag):
