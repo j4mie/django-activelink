@@ -133,3 +133,14 @@ def test_with_querystring():
     data = {'request': rf.get('/test-url/?foo=bar')}
     rendered = render(template, data)
     assert rendered == 'on'
+
+def test_with_encodedchar():
+    template = """{% ifactive "test_with_arg" "encoded@arg" %}on{% else %}off{% endifactive %}"""
+
+    data = {'request': rf.get('/test-url-with-arg/encoded%40arg/')}
+    rendered = render(template, data)
+    assert rendered == 'on'
+
+    data = {'request': rf.get('/test-url-with-arg/encoded@arg/')}
+    rendered = render(template, data)
+    assert rendered == 'on'
