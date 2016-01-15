@@ -1,5 +1,10 @@
-from django.conf.urls.defaults import *
+from django import VERSION as DJANGO_VERSION
 from django.http import HttpResponse
+
+if DJANGO_VERSION >= (1, 6):
+    from django.conf.urls import patterns, url
+else:
+    from django.conf.urls.defaults import patterns, url
 
 
 urlpatterns = patterns('',
