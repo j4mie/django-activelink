@@ -1,13 +1,14 @@
 import warnings
-from django.template import Template, Context, loader
+from django import VERSION as DJANGO_VERSION
+from django.template import Template, Context
 from django.test.client import RequestFactory
+
+if DJANGO_VERSION < (1, 9):
+    from django.template.base import add_to_builtins
+    add_to_builtins('activelink.templatetags.activelink')
 
 
 rf = RequestFactory()
-
-
-# add activelink to builtin tags
-loader.add_to_builtins('activelink.templatetags.activelink')
 
 
 def render(template_string, dictionary=None):
